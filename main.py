@@ -1,20 +1,14 @@
-import os
 import asyncio
-
-from telebot.asyncio_filters import ForwardFilter
-from telebot.asyncio_filters import IsDigitFilter
-from telebot.asyncio_filters import IsReplyFilter
-from telebot.asyncio_filters import StateFilter
-
+from datetime import datetime, timedelta
+from telebot.asyncio_filters import ForwardFilter, IsDigitFilter, IsReplyFilter, StateFilter
 from config import bot
 from config import basedir
-from middleware import TokenMiddleware
-from filters import forward_filter
-from filters import reply_filter
-from filters import content_types_filter
+from controller import UserController
+from filters import forward_filter, reply_filter, content_types_filter
+from handlers import text_handler, start
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from handlers import text_handler
-from handlers import start
+from scheduler import ScheduledTasks
 
 
 class Bot:
@@ -30,13 +24,16 @@ class Bot:
         bot.add_custom_filter(ForwardFilter())
         bot.add_custom_filter(StateFilter(bot))
         bot.add_custom_filter(IsDigitFilter())
-        bot.setup_middleware(TokenMiddleware())
+        self.scheduler = AsyncIOScheduler()
+        self.scheduled_tasks = ScheduledTasks(self.scheduler)
 
-    @staticmethod
-    async def polling():
+    async def polling(self):
         task1 = asyncio.create_task(bot.infinity_polling())
+        self.scheduled_tasks.run()
         await task1
 
 
 if __name__ == "__main__":
-    asyncio.run(Bot.polling())
+    b = Bot()
+    asyncio.run(b.polling())
+    asyncio.get_event_loop().run_forever()

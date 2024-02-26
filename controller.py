@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from enum import Enum
 from config import basedir
-from yandexgpt import YandexChatGPT
+from config import bot
 
 
 class TokenStatus(Enum):
@@ -13,6 +13,8 @@ class TokenStatus(Enum):
 class UserController:
     USERS_FILE = Path(f"{basedir}/users.json")
     CONFIG_FILE = Path(f"{basedir}/config.json")
+
+    storage = {}
 
     @classmethod
     def create_user(cls, chat_id: int, prompt: str, tokens: int = 5):
@@ -97,6 +99,45 @@ class UserController:
     def _save_users_list(cls, users_list):
         with open(cls.USERS_FILE, "w", encoding="utf-8") as file:
             json.dump(users_list, file, ensure_ascii=False, indent=2)
+
+    def add_message_id(self, user_id, message_id):
+        self.storage[int(user_id)] = message_id
+
+    async def delete_message_id(self, user_id):
+        user_id = int(user_id)
+        if user_id in self.storage:
+            if self.storage[user_id] is not None:
+                await bot.delete_message(user_id, self.storage[user_id])
+                self.storage[user_id] = None
+
+    @classmethod
+    def clear_message_history(cls, chat_id: int):
+        history_file = Path(f"{basedir}/chats/{chat_id}_history.json")
+
+        if history_file.exists():
+            with open(history_file, "r", encoding="utf-8") as file:
+                history_data = json.load(file)
+
+            if len(history_data) > 1:
+                new_history_data = [history_data[0]]
+
+                with open(history_file, "w", encoding="utf-8") as file:
+                    json.dump(new_history_data, file, ensure_ascii=False, indent=2)
+        else:
+            print(f"History file not found for chat_id {chat_id}")
+
+    @classmethod
+    def update_all_tokens(cls):
+        users_list = cls._load_users_list()
+
+        if UserController.CONFIG_FILE.exists():
+            with open(UserController.CONFIG_FILE, "r", encoding="utf-8") as file:
+                data = json.load(file)
+
+        for user_data in users_list:
+            user_data["tokens"] = data['token_per_day_limit']
+
+        cls._save_users_list(users_list)
 
 
 if __name__ == "__main__":

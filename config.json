@@ -3,5 +3,6 @@
   "prompt": "Ты ассистент по математике",
   "advertising_chat_url": "https://t.me/test_spam_chat",
   "start_message": "Стартовое сообщение",
-  "subscribe_message": "*Подпишись на канал!*"
+  "subscribe_message": "*Подпишись на канал!*",
+  "after_sub": "Задайте свой вопрос!"
 }
