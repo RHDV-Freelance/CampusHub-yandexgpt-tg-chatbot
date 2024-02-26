@@ -13,6 +13,9 @@ from filters import forward_filter
 from filters import reply_filter
 from filters import content_types_filter
 
+from handlers import text_handler
+from handlers import start
+
 
 class Bot:
     _instance = None
@@ -36,4 +39,4 @@ class Bot:
 
 
 if __name__ == "__main__":
-    Bot.polling()
+    asyncio.run(Bot.polling())

@@ -13,7 +13,7 @@ class YandexChatGPT:
     with open("config.json", "r", encoding="utf-8") as file:
         config_json = json.load(file)
 
-    _tokens_per_day: int = config_json['TOKEN_PER_DAY_LIMIT']
+    _tokens_per_day: int = config_json['token_per_day_limit']
     _chat_version: str = "gpt"
     _model: str = "yandexgpt-lite"
     _stream: bool = False
@@ -25,8 +25,11 @@ class YandexChatGPT:
         "Authorization": f"Api-Key {api_key_yandex_cloud}"
     }
 
+    _payload: dict[str: str] = None
+    _response: json = None
+
     @classmethod
-    def sync_prompt(cls, chat_id: str, prompt: str):
+    def sync_prompt(cls, chat_id: str, prompt: str) -> str:
         chat_history_file = Path(f"{basedir}/chats/{chat_id}_history.json")
         if chat_history_file.exists():
             with open(chat_history_file, "r", encoding="utf-8") as file:
@@ -34,13 +37,10 @@ class YandexChatGPT:
         else:
             messages_history = []
 
-        system_prompt = cls.load_system_prompt()
-        messages_history.insert(0, system_prompt)
-
         user_prompt = {"role": "user", "text": prompt}
         messages_history.append(user_prompt)
 
-        payload = {
+        cls._payload = {
             "modelUri": f"{cls._chat_version}://{catalog_id_yandex_cloud}/{cls._model}",
             "completionOptions": {
                 "stream": cls._stream,
@@ -50,8 +50,8 @@ class YandexChatGPT:
             "messages": messages_history
         }
 
-        response = requests.post(cls._url, headers=cls._headers, json=payload)
-        result = response.json()
+        cls._response = requests.post(cls._url, headers=cls._headers, json=cls._payload)
+        result = cls._response.json()
 
         assistant_response = result["result"]["alternatives"][0]["message"]
         messages_history.append(assistant_response)
@@ -62,11 +62,11 @@ class YandexChatGPT:
         return assistant_response['text']
 
     @staticmethod
-    def load_system_prompt():
+    def load_system_prompt() -> dict[str: str]:
         system_prompt_file = "config.json"
         with open(system_prompt_file, "r", encoding="utf-8") as file:
             system_prompt = json.load(file)
-        return {"role": "system", "text": system_prompt['PROMPT']}
+        return {"role": "system", "text": system_prompt['prompt']}
 
 
 if __name__ == "__main__":
