@@ -26,7 +26,13 @@ async def text_handler(message):
 
     if UserController.get_start_state(chat_id=message.chat.id):
         response_text = YandexChatGPT.sync_prompt(chat_id=message.chat.id, prompt=message.text)
-        await bot.send_message(chat_id=message.chat.id, text=response_text, parse_mode="MARKDOWN")
+        try:
+            await bot.send_message(chat_id=message.chat.id, text=response_text, parse_mode="MARKDOWN")
+        except Exception:
+            response_text = YandexChatGPT.sync_prompt(chat_id=message.chat.id, prompt=message.text)
+            await bot.send_message(chat_id=message.chat.id, text=response_text, parse_mode="MARKDOWN")
+
+        UserController.clear_message_history(chat_id=message.chat.id)
         UserController.update_start_state(chat_id=message.chat.id, new_start_state=False)
 
         await _go_subscribe(chat_id=message.chat.id)
@@ -54,7 +60,14 @@ async def text_handler(message):
 
                 UserController.deduct_tokens(chat_id=message.chat.id, tokens_to_deduct=1)
                 response_text = YandexChatGPT.sync_prompt(chat_id=message.chat.id, prompt=message.text)
-                await bot.send_message(chat_id=message.chat.id, text=response_text, parse_mode="MARKDOWN")
+
+                try:
+                    await bot.send_message(chat_id=message.chat.id, text=response_text, parse_mode="MARKDOWN")
+                except Exception:
+                    response_text = YandexChatGPT.sync_prompt(chat_id=message.chat.id, prompt=message.text)
+                    await bot.send_message(chat_id=message.chat.id, text=response_text, parse_mode="MARKDOWN")
+
+                UserController.clear_message_history(chat_id=message.chat.id)
 
                 tokens_count = UserController.get_token_count(chat_id=message.chat.id)
 
@@ -63,18 +76,7 @@ async def text_handler(message):
                     await bot.send_message(
                         chat_id=message.chat.id,
                         text=f"❗️ У вас осталось {tokens_count} токенов.",
-                        parse_mode="html",
-                        reply_markup=types.InlineKeyboardMarkup(
-                            row_width=2,
-                            keyboard=[
-                                [
-                                    types.InlineKeyboardButton(
-                                        "♻️ Обновить историю чата",
-                                        callback_data=f"clear"
-                                    )
-                                ]
-                            ]
-                        )
+                        parse_mode="html"
                     )
 
                 else:
@@ -94,18 +96,7 @@ async def text_handler(message):
  Токены обновятся *{formatted_date}* по Москве (GMT+3) и вы получите: *{data['token_per_day_limit']} токенов*.
 ❗️ 1 токен = 1 запрос
     ''',
-                        parse_mode="MARKDOWN",
-                        reply_markup=types.InlineKeyboardMarkup(
-                            row_width=2,
-                            keyboard=[
-                                [
-                                    types.InlineKeyboardButton(
-                                        "✅ Обновить историю чата",
-                                        callback_data=f"clear"
-                                    )
-                                ]
-                            ]
-                        )
+                        parse_mode="MARKDOWN"
                     )
 
             else:
@@ -125,18 +116,7 @@ async def text_handler(message):
 🔁 Токены обновятся *{formatted_date}* по Москве (GMT+3) и вы получите: *{data['token_per_day_limit']} токенов*.
 ❗️ 1 токен = 1 запрос
     ''',
-                    parse_mode="MARKDOWN",
-                    reply_markup=types.InlineKeyboardMarkup(
-                        row_width=2,
-                        keyboard=[
-                            [
-                                types.InlineKeyboardButton(
-                                    "✅ Обновить историю чата",
-                                    callback_data=f"clear"
-                                )
-                            ]
-                        ]
-                    )
+                    parse_mode="MARKDOWN"
                 )
 
 
@@ -252,6 +232,5 @@ async def callback_handler(call):
         await _go_subscribe(user_id)
 
     if "clear" in call.data:
-        UserController.clear_message_history(chat_id=call.message.chat.id)
         await bot.answer_callback_query(callback_query_id=call.id, text="♻️ История переписки очищена", show_alert=True)
 
