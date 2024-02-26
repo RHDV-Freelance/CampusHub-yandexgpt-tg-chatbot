@@ -15,12 +15,19 @@ class ScheduledTasks:
 
     async def process(self):
         UserController.update_all_tokens()
-        await bot.send_message(406149871, "🔁 Токены обновлены!")
+        users_chatids = UserController.get_all_chat_ids()
+
+        try:
+            for chat_id in users_chatids:
+                await bot.send_message(chat_id=chat_id, text="🔁 Токены обновлены!")
+
+        except Exception:
+            pass
 
     def run(self):
         moscow_tz = timezone(timedelta(hours=3))
 
-        trigger = CronTrigger(hour=0, minute=0, second=0, timezone=moscow_tz)
+        trigger = CronTrigger(hour=8, minute=37, second=0, timezone=moscow_tz)
 
         job_id = "daily_task"
         self.scheduler.add_job(

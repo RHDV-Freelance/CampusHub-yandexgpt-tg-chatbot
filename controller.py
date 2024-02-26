@@ -139,6 +139,11 @@ class UserController:
 
         cls._save_users_list(users_list)
 
+    @classmethod
+    def get_all_chat_ids(cls):
+        users_list = cls._load_users_list()
+        return [user["chat_id"] for user in users_list]
+
 
 if __name__ == "__main__":
     chat_id = 1231244
