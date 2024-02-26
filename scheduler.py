@@ -27,7 +27,7 @@ class ScheduledTasks:
     def run(self):
         moscow_tz = timezone(timedelta(hours=3))
 
-        trigger = CronTrigger(hour=8, minute=37, second=0, timezone=moscow_tz)
+        trigger = CronTrigger(hour=0, minute=0, second=0, timezone=moscow_tz)
 
         job_id = "daily_task"
         self.scheduler.add_job(
