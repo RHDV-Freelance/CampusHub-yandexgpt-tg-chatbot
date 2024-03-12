@@ -6,9 +6,8 @@ from config import basedir
 from controller import UserController
 from filters import forward_filter, reply_filter, content_types_filter
 from handlers import text_handler, start
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from scheduler import ScheduledTasks
+from scheduler import scheduled_tasks
 
 
 class Bot:
@@ -24,8 +23,7 @@ class Bot:
         bot.add_custom_filter(ForwardFilter())
         bot.add_custom_filter(StateFilter(bot))
         bot.add_custom_filter(IsDigitFilter())
-        self.scheduler = AsyncIOScheduler()
-        self.scheduled_tasks = ScheduledTasks(self.scheduler)
+        self.scheduled_tasks = scheduled_tasks
 
     async def polling(self):
         task1 = asyncio.create_task(bot.infinity_polling())

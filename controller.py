@@ -16,6 +16,8 @@ class UserController:
 
     storage = {}
 
+    chain_users = []
+
     @classmethod
     def create_user(cls, chat_id: int, prompt: str, tokens: int = 5):
         users_list = cls._load_users_list()
@@ -143,6 +145,18 @@ class UserController:
     def get_all_chat_ids(cls):
         users_list = cls._load_users_list()
         return [user["chat_id"] for user in users_list]
+
+    @classmethod
+    def add_user_to_chain(cls, chat_id):
+        cls.chain_users.append(chat_id)
+
+    @classmethod
+    def remove_user_from_chain(cls, chat_id):
+        cls.chain_users.remove(chat_id)
+
+    @classmethod
+    def get_users_from_chain(cls):
+        return cls.chain_users
 
 
 if __name__ == "__main__":
