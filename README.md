@@ -1,4 +1,6 @@
-# YandexGPT-Telegram_chatBot
+# CampusHub YandexGPT telegram chat bot
+
+## [TelegramBot](https://t.me/kampus_code_bot) <--- Link
 
 ## Description
 Telegram chat bot with YandexGPT integration. Subscription checker. Flexible configuration via config
